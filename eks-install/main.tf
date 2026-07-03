@@ -7,11 +7,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "demo-terraform-eks-state-s3-bucket"
-    key            = "terraform.tfstate"
-    region         = "us-west-2"
-    dynamodb_table = "terraform-eks-state-locks"
-    encrypt        = true
+    bucket       = "aakhil-terraform-eks-state-ap-south-1" # Must be globally unique and created in AWS first
+    key          = "terraform.tfstate"
+    region       = "ap-south-1"                            # Aligned with your standard deployment region
+    use_lockfile = true                                    # Replaces the deprecated dynamodb_table
+    encrypt      = true
   }
 }
 
