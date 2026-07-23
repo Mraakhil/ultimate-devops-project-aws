@@ -7,8 +7,12 @@ pipeline {
 
     environment {
         TF_DIR = 'eks-install'
-        AWS_CREDENTIALS_ID = 'your-aws-credentials-id'
         AWS_DEFAULT_REGION = 'ap-south-1'
+        
+        // This pulls the two "Secret text" credentials you already created in Jenkins
+        // using the exact IDs shown in your screenshot ('accesskey' and 'secretaccesskey')
+        AWS_ACCESS_KEY_ID = credentials('accesskey')
+        AWS_SECRET_ACCESS_KEY = credentials('secretaccesskey')
     }
 
     stages {
@@ -21,9 +25,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                        sh 'terraform init'
-                    }
+                    sh 'terraform init'
                 }
             }
         }
@@ -31,9 +33,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                        sh "terraform plan ${params.ACTION == 'destroy' ? '-destroy' : ''} -out=tfplan"
-                    }
+                    sh "terraform plan ${params.ACTION == 'destroy' ? '-destroy' : ''} -out=tfplan"
                 }
             }
         }
@@ -47,13 +47,11 @@ pipeline {
         stage('Terraform Execute') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                        script {
-                            if (params.ACTION == 'apply') {
-                                sh 'terraform apply -auto-approve tfplan'
-                            } else if (params.ACTION == 'destroy') {
-                                sh 'terraform apply -destroy -auto-approve'
-                            }
+                    script {
+                        if (params.ACTION == 'apply') {
+                            sh 'terraform apply -auto-approve tfplan'
+                        } else if (params.ACTION == 'destroy') {
+                            sh 'terraform apply -destroy -auto-approve'
                         }
                     }
                 }
