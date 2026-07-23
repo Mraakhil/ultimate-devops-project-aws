@@ -1,13 +1,12 @@
 pipeline {
     agent any
+    
     parameters {
         choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Choose whether to apply or destroy the Terraform EKS module')
     }
 
     environment {
-       
         TF_DIR = 'eks-install'
-
         AWS_CREDENTIALS_ID = 'your-aws-credentials-id'
         AWS_DEFAULT_REGION = 'ap-south-1'
     }
@@ -22,7 +21,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                         sh 'terraform init'
                     }
                 }
@@ -32,7 +31,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                         sh "terraform plan ${params.ACTION == 'destroy' ? '-destroy' : ''} -out=tfplan"
                     }
                 }
@@ -48,7 +47,7 @@ pipeline {
         stage('Terraform Execute') {
             steps {
                 dir("${env.TF_DIR}") {
-                    withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "${AWS_CREDENTIALS_ID}", accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
                         script {
                             if (params.ACTION == 'apply') {
                                 sh 'terraform apply -auto-approve tfplan'
