@@ -44,7 +44,7 @@ pipeline {
 
         stage('Manual Approval') {
             steps {
-                input message: "Review plan for folder '${env.TF_DIR}'. Proceed with ${params.ACTION}?", ok: params.proceed == 'yes' ? 'Yes': 'No'
+                input message: "Review plan for folder '${env.TF_DIR}'. Proceed with ${params.ACTION}?", ok: "Yes, proceed"
             }
         }
 
