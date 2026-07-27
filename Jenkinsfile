@@ -6,6 +6,7 @@ pipeline {
     
     parameters {
         choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Choose whether to apply or destroy the Terraform EKS module')
+        choice(name: "proceed", choices: ['yes', 'no'], description: 'Do you want to proceed with the action?')
     }
 
     environment {
@@ -43,7 +44,7 @@ pipeline {
 
         stage('Manual Approval') {
             steps {
-                input message: "Review plan for folder '${env.TF_DIR}'. Proceed with ${params.ACTION}?", ok: 'Proceed'
+                input message: "Review plan for folder '${env.TF_DIR}'. Proceed with ${params.ACTION}?", ok: params.proceed == 'yes' ? 'Yes': 'No'
             }
         }
 
