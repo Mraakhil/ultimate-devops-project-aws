@@ -41,12 +41,6 @@ pipeline {
             }
         }
 
-        stage('Manual Approval') {
-            steps {
-                input message: "Review plan for folder '${env.TF_DIR}'. Proceed with ${params.ACTION}?", ok: 'Proceed'
-            }
-        }
-
         stage('Terraform Execute') {
             steps {
                 dir("${env.TF_DIR}") {
